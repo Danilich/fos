@@ -104,6 +104,7 @@ type DefaultClient struct {
 	Scopes         []string `json:"scopes"`
 	Audience       []string `json:"audience"`
 	Public         bool     `json:"public"`
+	MayAct         []string `json:"may_act"`
 }
 
 type DefaultOpenIDConnectClient struct {
@@ -114,6 +115,17 @@ type DefaultOpenIDConnectClient struct {
 	RequestURIs                       []string            `json:"request_uris"`
 	RequestObjectSigningAlgorithm     string              `json:"request_object_signing_alg"`
 	TokenEndpointAuthSigningAlgorithm string              `json:"token_endpoint_auth_signing_alg"`
+}
+
+type TokenExchangeClient interface {
+	// GetMayAct returns the allowed exchange actor(s) for this client
+	GetMayAct() Arguments
+
+	Client
+}
+
+func (c *DefaultClient) GetMayAct() Arguments {
+	return c.MayAct
 }
 
 type DefaultResponseModeClient struct {

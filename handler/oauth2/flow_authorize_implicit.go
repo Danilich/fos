@@ -97,7 +97,7 @@ func (c *AuthorizeImplicitGrantTypeHandler) IssueImplicitAccessToken(ctx context
 		return errorsx.WithStack(fosite.ErrServerError.WithWrap(err).WithDebug(err.Error()))
 	}
 	resp.AddParameter("access_token", token)
-	resp.AddParameter("expires_in", strconv.FormatInt(int64(getExpiresIn(ar, fosite.AccessToken, c.AccessTokenLifespan, time.Now().UTC())/time.Second), 10))
+	resp.AddParameter("expires_in", strconv.FormatInt(int64(GetExpiresIn(ar, fosite.AccessToken, c.AccessTokenLifespan, time.Now().UTC())/time.Second), 10))
 	resp.AddParameter("token_type", "bearer")
 	resp.AddParameter("state", ar.GetState())
 	resp.AddParameter("scope", strings.Join(ar.GetGrantedScopes(), " "))

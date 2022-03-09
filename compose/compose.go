@@ -126,5 +126,6 @@ func ComposeAllEnabled(config *Config, storage interface{}, secret []byte, key *
 		OAuth2TokenRevocationFactory,
 
 		OAuth2PKCEFactory,
+		OAuth2TokenExchangeFactory,
 	)
 }

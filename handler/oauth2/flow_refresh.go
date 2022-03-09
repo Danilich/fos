@@ -49,6 +49,7 @@ type RefreshTokenGrantHandler struct {
 	ScopeStrategy            fosite.ScopeStrategy
 	AudienceMatchingStrategy fosite.AudienceMatchingStrategy
 	RefreshTokenScopes       []string
+	Store                    fosite.Storage
 }
 
 // HandleTokenEndpointRequest implements https://tools.ietf.org/html/rfc6749#section-6
@@ -97,9 +98,41 @@ func (c *RefreshTokenGrantHandler) HandleTokenEndpointRequest(ctx context.Contex
 	request.SetRequestedScopes(originalRequest.GetRequestedScopes())
 	request.SetRequestedAudience(originalRequest.GetRequestedAudience())
 
+	//Added
+
+	var subjectTokenClient fosite.Client = nil
+	if originalRequest.GetSubjectTokenClient() != nil {
+		// original request was token exchange
+		// reload client from storage to ensure that may_act is up to date in case of eventual revocation
+		subjectTokenClient, err = c.Store.GetClient(ctx, originalRequest.GetSubjectTokenClient().GetID())
+		if err != nil {
+			return errors.WithStack(fosite.ErrInvalidClient.WithHint("The subjects OAuth2 Client does not exist."))
+		}
+
+		subjectTokenClient, ok := subjectTokenClient.(fosite.TokenExchangeClient)
+		if !ok {
+			return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
+		}
+
+		// keep the subjects token client for following refresh requests
+		tokenExchangeRequest, ok := request.(fosite.TokenExchangeAccessRequester)
+		if !ok {
+			return errors.WithStack(fosite.ErrInvalidRequestObject)
+		}
+		tokenExchangeRequest.SetSubjectTokenClient(subjectTokenClient)
+
+		// check if the subjects token client (still) has may_act claim for current client
+		if !subjectTokenClient.GetMayAct().HasOneOf(request.GetClient().GetID()) {
+			return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
+		}
+	}
+
+	//
 	for _, scope := range originalRequest.GetGrantedScopes() {
-		if !c.ScopeStrategy(request.GetClient().GetScopes(), scope) {
-			return errorsx.WithStack(fosite.ErrInvalidScope.WithHintf("The OAuth 2.0 Client is not allowed to request scope '%s'.", scope))
+		if !c.ScopeStrategy(request.GetClient().GetScopes(), scope) &&
+			// if it is a refresh of an exchanged token, check scopes against those of the subjects token client too
+			(subjectTokenClient == nil || !c.ScopeStrategy(subjectTokenClient.GetScopes(), scope)) {
+			return errors.WithStack(fosite.ErrInvalidScope.WithHintf("The OAuth 2.0 Client is not allowed to request scope \"%s\".", scope))
 		}
 		request.GrantScope(scope)
 	}
@@ -170,7 +203,7 @@ func (c *RefreshTokenGrantHandler) PopulateTokenEndpointResponse(ctx context.Con
 
 	responder.SetAccessToken(accessToken)
 	responder.SetTokenType("bearer")
-	responder.SetExpiresIn(getExpiresIn(requester, fosite.AccessToken, c.AccessTokenLifespan, time.Now().UTC()))
+	responder.SetExpiresIn(GetExpiresIn(requester, fosite.AccessToken, c.AccessTokenLifespan, time.Now().UTC()))
 	responder.SetScopes(requester.GetGrantedScopes())
 	responder.SetExtra("refresh_token", refreshToken)
 

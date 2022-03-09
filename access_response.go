@@ -38,6 +38,10 @@ type AccessResponse struct {
 	TokenType   string
 }
 
+func (a *AccessResponse) SetIssuedTokenType(tokenType string) {
+	a.SetExtra("issued_token_type", tokenType)
+}
+
 func (a *AccessResponse) SetScopes(scopes Arguments) {
 	a.SetExtra("scope", strings.Join(scopes, " "))
 }

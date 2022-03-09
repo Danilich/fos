@@ -41,3 +41,6 @@ func NewAccessRequest(session Session) *AccessRequest {
 func (a *AccessRequest) GetGrantTypes() Arguments {
 	return a.GrantTypes
 }
+func (a *AccessRequest) SetSubjectTokenClient(client TokenExchangeClient) {
+	a.SubjectTokenClient = client
+}

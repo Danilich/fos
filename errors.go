@@ -220,6 +220,12 @@ var (
 		ErrorField:       errJTIKnownName,
 		CodeField:        http.StatusBadRequest,
 	}
+
+	ErrInvalidTarget = &RFC6749Error{
+		DescriptionField: "Invalid target.",
+		ErrorField:       errInvalidTarget,
+		CodeField:        http.StatusBadRequest,
+	}
 )
 
 const (
@@ -257,6 +263,7 @@ const (
 	errRequestURINotSupportedName   = "request_uri_not_supported"
 	errRegistrationNotSupportedName = "registration_not_supported"
 	errJTIKnownName                 = "jti_known"
+	errInvalidTarget                = "invalid_target"
 )
 
 type (
@@ -550,4 +557,10 @@ func (e *RFC6749Error) computeHintField() {
 	}
 
 	e.HintField = i18n.GetMessageOrDefault(e.catalog, e.hintIDField, e.lang, e.HintField, e.hintArgs...)
+}
+
+func (e *RFC6749Error) WithCause(cause error) *RFC6749Error {
+	err := *e
+	err.cause = cause
+	return &err
 }

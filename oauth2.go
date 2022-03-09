@@ -43,6 +43,12 @@ const (
 	BearerAccessToken string = "bearer"
 )
 
+type TokenExchangeAccessRequester interface {
+	SetSubjectTokenClient(client TokenExchangeClient)
+
+	AccessRequester
+}
+
 // OAuth2Provider is an interface that enables you to write OAuth2 handlers with only a few lines of code.
 // Check fosite.Fosite for an implementation of this interface.
 type OAuth2Provider interface {
@@ -238,6 +244,9 @@ type Requester interface {
 
 	// Sanitize returns a sanitized clone of the request which can be used for storage.
 	Sanitize(allowedParameters []string) Requester
+
+	// GetSubjectTokenClient returns the client from the subject token in a token exchange flow.
+	GetSubjectTokenClient() (client TokenExchangeClient)
 }
 
 // AccessRequester is a token endpoint's request context.
@@ -299,6 +308,9 @@ type AccessResponder interface {
 
 	// SetTokenType set's the responses mandatory token type
 	SetTokenType(tokenType string)
+
+	// SetIssueTokenType sets the responses mandatory type of the issued token in a token exchange (rfc8693#section-2.2)
+	SetIssuedTokenType(tokenType string)
 
 	// SetAccessToken returns the responses access token.
 	GetAccessToken() (token string)
