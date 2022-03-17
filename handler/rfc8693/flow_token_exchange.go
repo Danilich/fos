@@ -196,3 +196,12 @@ func (c *TokenExchangeGrantHandler) PopulateTokenEndpointResponse(ctx context.Co
 
 	return nil
 }
+func (c *TokenExchangeGrantHandler) CanSkipClientAuth(requester fosite.AccessRequester) bool {
+	return false
+}
+
+func (c *TokenExchangeGrantHandler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester) bool {
+	// grant_type REQUIRED.
+	// Value MUST be set to "client_credentials".
+	return requester.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange")
+}
