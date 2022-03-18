@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type TokenExchangeGrantHandler struct {
+type Handler struct {
 	AccessTokenStrategy      oauth2.AccessTokenStrategy
 	AccessTokenStorage       oauth2.AccessTokenStorage
 	AccessTokenLifespan      time.Duration
@@ -25,7 +25,7 @@ type TokenExchangeGrantHandler struct {
 }
 
 // HandleTokenEndpointRequest implements https://tools.ietf.org/html/rfc8693#section-2.1 (currently impersonation only)
-func (c *TokenExchangeGrantHandler) HandleTokenEndpointRequest(ctx context.Context, request fosite.AccessRequester) error {
+func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite.AccessRequester) error {
 
 	log.Println("Flow_echange HandleTokenEndpointRequest")
 
@@ -160,7 +160,7 @@ func (c *TokenExchangeGrantHandler) HandleTokenEndpointRequest(ctx context.Conte
 }
 
 // PopulateTokenEndpointResponse implements https://tools.ietf.org/html/rfc8693#section-2.2 (currently impersonation only)
-func (c *TokenExchangeGrantHandler) PopulateTokenEndpointResponse(ctx context.Context, request fosite.AccessRequester, response fosite.AccessResponder) error {
+func (c *Handler) PopulateTokenEndpointResponse(ctx context.Context, request fosite.AccessRequester, response fosite.AccessResponder) error {
 	if !request.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange") {
 		return errors.WithStack(fosite.ErrUnknownRequest)
 	}
@@ -200,11 +200,11 @@ func (c *TokenExchangeGrantHandler) PopulateTokenEndpointResponse(ctx context.Co
 
 	return nil
 }
-func (c *TokenExchangeGrantHandler) CanSkipClientAuth(requester fosite.AccessRequester) bool {
+func (c *Handler) CanSkipClientAuth(requester fosite.AccessRequester) bool {
 	return true
 }
 
-func (c *TokenExchangeGrantHandler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester) bool {
+func (c *Handler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester) bool {
 	log.Println(requester.GetGrantTypes())
 
 	// grant_type REQUIRED.

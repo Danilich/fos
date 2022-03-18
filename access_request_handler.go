@@ -24,7 +24,6 @@ package fosite
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -90,8 +89,7 @@ func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session 
 	client, clientErr := f.AuthenticateClient(ctx, r, r.PostForm)
 	if clientErr == nil {
 		accessRequest.Client = client
-		log.Println(client.GetID())
-		log.Println(client.GetGrantTypes())
+
 	}
 
 	var found = false

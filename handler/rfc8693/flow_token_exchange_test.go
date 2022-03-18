@@ -24,7 +24,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 	storage := internal.NewMockStorage(ctrl)
 	defer ctrl.Finish()
 
-	h := TokenExchangeGrantHandler{
+	h := Handler{
 		AccessTokenStrategy:      chgen,
 		AccessTokenStorage:       store,
 		AccessTokenLifespan:      time.Hour,
@@ -230,7 +230,7 @@ func TestTokenExchange_PopulateTokenEndpointResponse(t *testing.T) {
 	aresp := fosite.NewAccessResponse()
 	defer ctrl.Finish()
 
-	h := TokenExchangeGrantHandler{
+	h := Handler{
 		AccessTokenStrategy:  chgen,
 		AccessTokenStorage:   store,
 		RefreshTokenStrategy: refresh,
