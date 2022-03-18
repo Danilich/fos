@@ -23,6 +23,7 @@ package fosite
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -95,9 +96,12 @@ func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session 
 
 	var found = false
 	for _, loader := range f.TokenEndpointHandlers {
+		//log.Println(f.TokenEndpointHandlers[0])
+		xType := fmt.Sprintf("%T", loader)
+		fmt.Println("Handler type")
+		fmt.Println(xType) // "[]int"
 		// Is the loader responsible for handling the request?
 		if !loader.CanHandleTokenEndpointRequest(accessRequest) {
-			log.Println("Can't handle")
 			continue
 		}
 
