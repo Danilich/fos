@@ -6,6 +6,7 @@ import (
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
 	"github.com/pkg/errors"
+	"log"
 	"time"
 )
 
@@ -25,6 +26,9 @@ type TokenExchangeGrantHandler struct {
 
 // HandleTokenEndpointRequest implements https://tools.ietf.org/html/rfc8693#section-2.1 (currently impersonation only)
 func (c *TokenExchangeGrantHandler) HandleTokenEndpointRequest(ctx context.Context, request fosite.AccessRequester) error {
+
+	log.Println("Flow_echange HandleTokenEndpointRequest")
+
 	// From https://tools.ietf.org/html/rfc8693#section-2.1:
 	//
 	//	grant_type
@@ -197,10 +201,12 @@ func (c *TokenExchangeGrantHandler) PopulateTokenEndpointResponse(ctx context.Co
 	return nil
 }
 func (c *TokenExchangeGrantHandler) CanSkipClientAuth(requester fosite.AccessRequester) bool {
-	return false
+	return true
 }
 
 func (c *TokenExchangeGrantHandler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester) bool {
+	log.Println(requester.GetGrantTypes())
+
 	// grant_type REQUIRED.
 	// Value MUST be set to "client_credentials".
 	return requester.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange")

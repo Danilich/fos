@@ -23,6 +23,7 @@ package fosite
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
@@ -58,6 +59,7 @@ import (
 //   client MUST authenticate with the authorization server as described
 //   in Section 3.2.1.
 func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session Session) (AccessRequester, error) {
+
 	accessRequest := NewAccessRequest(session)
 	accessRequest.Request.Lang = i18n.GetLangFromRequest(f.MessageCatalog, r)
 
@@ -87,12 +89,15 @@ func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session 
 	client, clientErr := f.AuthenticateClient(ctx, r, r.PostForm)
 	if clientErr == nil {
 		accessRequest.Client = client
+		log.Println(client.GetID())
+		log.Println(client.GetGrantTypes())
 	}
 
 	var found = false
 	for _, loader := range f.TokenEndpointHandlers {
 		// Is the loader responsible for handling the request?
 		if !loader.CanHandleTokenEndpointRequest(accessRequest) {
+			log.Println("Can't handle")
 			continue
 		}
 
@@ -108,6 +113,7 @@ func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session 
 		if err := loader.HandleTokenEndpointRequest(ctx, accessRequest); err == nil {
 			found = true
 		} else if errors.Is(err, ErrUnknownRequest) {
+
 			// This is a duplicate because it should already have been handled by
 			// `loader.CanHandleTokenEndpointRequest(accessRequest)` but let's keep it for sanity.
 			//

@@ -23,6 +23,7 @@ package oauth2
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/ory/x/errorsx"
@@ -38,6 +39,9 @@ type ClientCredentialsGrantHandler struct {
 
 // IntrospectTokenEndpointRequest implements https://tools.ietf.org/html/rfc6749#section-4.4.2
 func (c *ClientCredentialsGrantHandler) HandleTokenEndpointRequest(_ context.Context, request fosite.AccessRequester) error {
+
+	log.Println("Client Creds HandleTokenEndpointRequest")
+
 	if !c.CanHandleTokenEndpointRequest(request) {
 		return errorsx.WithStack(fosite.ErrUnknownRequest)
 	}
