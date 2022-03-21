@@ -135,7 +135,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
 
 				subjectTokenClient := &fosite.DefaultClient{
-					MayAct: []string{"exchange-client"},
+					//MayAct: []string{"exchange-client"},
 				}
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Return(nil)
 				delegatedAreq.EXPECT().GetClient().Return(subjectTokenClient)
@@ -160,7 +160,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
 
 				subjectTokenClient := &fosite.DefaultClient{
-					MayAct: []string{"exchange-client"},
+					//MayAct: []string{"exchange-client"},
 				}
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
 				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
@@ -192,11 +192,11 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
 
 				subjectTokenClient := &fosite.DefaultClient{
-					MayAct: []string{"exchange-client"},
+					//MayAct: []string{"exchange-client"},
 				}
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
 				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
-				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
+				//areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
 
 				areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
 				areq.EXPECT().GetRequestedAudience().Return([]string{})

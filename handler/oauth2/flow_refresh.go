@@ -122,9 +122,9 @@ func (c *RefreshTokenGrantHandler) HandleTokenEndpointRequest(ctx context.Contex
 		tokenExchangeRequest.SetSubjectTokenClient(subjectTokenClient)
 
 		// check if the subjects token client (still) has may_act claim for current client
-		if !subjectTokenClient.GetMayAct().HasOneOf(request.GetClient().GetID()) {
-			return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
-		}
+		//if !subjectTokenClient.GetMayAct().HasOneOf(request.GetClient().GetID()) {
+		//	return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
+		//}
 	}
 
 	//
