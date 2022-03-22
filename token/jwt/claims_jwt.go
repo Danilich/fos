@@ -58,6 +58,10 @@ type JWTClaimsContainer interface {
 
 	// ToMapClaims returns the claims as a github.com/dgrijalva/jwt-go.MapClaims type.
 	ToMapClaims() MapClaims
+
+	Add(key string, value interface{}) JWTClaimsContainer
+
+	GetSubject() string
 }
 
 // JWTClaims represent a token's claims.
@@ -72,6 +76,10 @@ type JWTClaims struct {
 	Scope      []string
 	Extra      map[string]interface{}
 	ScopeField JWTScopeFieldEnum
+}
+
+func (c *JWTClaims) GetSubject() string {
+	return c.Subject
 }
 
 func (c *JWTClaims) With(expiry time.Time, scope, audience []string) JWTClaimsContainer {
@@ -237,15 +245,16 @@ func toTime(v interface{}, def time.Time) (t time.Time) {
 }
 
 // Add will add a key-value pair to the extra field
-func (c *JWTClaims) Add(key string, value interface{}) {
+func (c *JWTClaims) Add(key string, value interface{}) JWTClaimsContainer {
 	if c.Extra == nil {
 		c.Extra = make(map[string]interface{})
 	}
 	c.Extra[key] = value
+	return c
 }
 
 // Get will get a value from the extra field based on a given key
-func (c JWTClaims) Get(key string) interface{} {
+func (c *JWTClaims) Get(key string) interface{} {
 	return c.ToMap()[key]
 }
 
