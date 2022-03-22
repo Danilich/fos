@@ -134,6 +134,7 @@ func toRFCErr(v *jwt.ValidationError) *fosite.RFC6749Error {
 	}
 }
 
+//TODO
 func (h *DefaultJWTStrategy) generate(ctx context.Context, tokenType fosite.TokenType, requester fosite.Requester) (string, string, error) {
 	if jwtSession, ok := requester.GetSession().(JWTSessionContainer); !ok {
 		return "", "", errors.Errorf("Session must be of type JWTSessionContainer but got type: %T", requester.GetSession())

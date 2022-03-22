@@ -2,7 +2,6 @@ package rfc8693
 
 import (
 	"context"
-	"fmt"
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
@@ -129,19 +128,10 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
 	}
 
-	// check if the subjects token client allows the current client to perform an exchange on its tokens
-	//if !subjectClient.GetMayAct().HasOneOf(client.GetID()) {
-	//	//return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
-	//	return nil
-	//}
-
 	tokenExchangeRequest, ok := request.(fosite.TokenExchangeAccessRequester)
 	if !ok {
 		return errors.WithStack(fosite.ErrInvalidRequestObject)
 	}
-	xType := fmt.Sprintf("%T", subjectClient)
-	fmt.Println("Handler type")
-	fmt.Println(xType) // "[]int"
 
 	tokenExchangeRequest.SetSubjectTokenClient(subjectClient)
 
