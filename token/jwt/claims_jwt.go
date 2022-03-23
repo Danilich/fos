@@ -62,6 +62,8 @@ type JWTClaimsContainer interface {
 	Add(key string, value interface{}) JWTClaimsContainer
 
 	GetSubject() string
+
+	GetExtra() map[string]interface{}
 }
 
 // JWTClaims represent a token's claims.
@@ -76,6 +78,10 @@ type JWTClaims struct {
 	Scope      []string
 	Extra      map[string]interface{}
 	ScopeField JWTScopeFieldEnum
+}
+
+func (c *JWTClaims) GetExtra() map[string]interface{} {
+	return c.Extra
 }
 
 func (c *JWTClaims) GetSubject() string {

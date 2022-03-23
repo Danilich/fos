@@ -130,6 +130,7 @@ func runIntrospectTokenTest(t *testing.T, strategy oauth2.AccessTokenStrategy, i
 			_, bytes, errs := c.prepare(s).End()
 
 			assert.Nil(t, json.Unmarshal([]byte(bytes), &res))
+			fmt.Println(string(bytes))
 			t.Logf("Got answer: %s", bytes)
 
 			assert.Len(t, errs, 0)

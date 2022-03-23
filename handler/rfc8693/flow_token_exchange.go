@@ -2,6 +2,7 @@ package rfc8693
 
 import (
 	"context"
+	"fmt"
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
@@ -156,6 +157,7 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 
 // PopulateTokenEndpointResponse implements https://tools.ietf.org/html/rfc8693#section-2.2 (currently impersonation only)
 func (c *Handler) PopulateTokenEndpointResponse(ctx context.Context, request fosite.AccessRequester, response fosite.AccessResponder) error {
+	fmt.Println("Hello from Populates")
 	if !request.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange") {
 		return errors.WithStack(fosite.ErrUnknownRequest)
 	}
