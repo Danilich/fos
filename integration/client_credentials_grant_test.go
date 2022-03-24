@@ -45,7 +45,7 @@ func TestClientCredentialsFlow(t *testing.T) {
 }
 
 func runClientCredentialsGrantTest(t *testing.T, strategy oauth2.AccessTokenStrategy) {
-	f := compose.Compose(new(compose.Config), fositeStore, strategy, nil, compose.OAuth2TokenExchangeFactory, compose.OAuth2TokenIntrospectionFactory)
+	f := compose.Compose(new(compose.Config), fositeStore, strategy, nil, compose.OAuth2ClientCredentialsGrantFactory, compose.OAuth2TokenIntrospectionFactory)
 	ts := mockServer(t, f, &fosite.DefaultSession{})
 	defer ts.Close()
 
@@ -57,29 +57,23 @@ func runClientCredentialsGrantTest(t *testing.T, strategy oauth2.AccessTokenStra
 		check       func(t *testing.T, r *http.Response)
 		params      url.Values
 	}{
-		//{
-		//	description: "should fail because of ungranted scopes",
-		//	setup: func() {
-		//		oauthClient.Scopes = []string{"unknown"}
-		//
-		//	},
-		//	err: true,
-		//},
-		//{
-		//	description: "should fail because of ungranted audience",
-		//	params:      url.Values{"audience": {"https://www.ory.sh/not-api"}},
-		//	setup: func() {
-		//		oauthClient.Scopes = []string{"fosite"}
-		//	},
-		//	err: true,
-		//},
 		{
-			params: url.Values{
-				"audience":           {"https://www.ory.sh/api"},
-				"grant_type":         {"urn:ietf:params:oauth:grant-type:token-exchange"},
-				"subject_token":      {`$2a$10$IxMdI6d.LIRZPpSfEwNoeu4rY3FhDREsxFJXikcgdRRAStxUlsuEO`},
-				"subject_token_type": {"urn:ietf:params:oauth:token-type:access_token"},
+			description: "should fail because of ungranted scopes",
+			setup: func() {
+				oauthClient.Scopes = []string{"unknown"}
 			},
+			err: true,
+		},
+		{
+			description: "should fail because of ungranted audience",
+			params:      url.Values{"audience": {"https://www.ory.sh/not-api"}},
+			setup: func() {
+				oauthClient.Scopes = []string{"fosite"}
+			},
+			err: true,
+		},
+		{
+			params:      url.Values{"audience": {"https://www.ory.sh/api"}},
 			description: "should pass",
 			setup: func() {
 			},
@@ -88,25 +82,25 @@ func runClientCredentialsGrantTest(t *testing.T, strategy oauth2.AccessTokenStra
 				b.Client = new(fosite.DefaultClient)
 				b.Session = new(defaultSession)
 				require.NoError(t, json.NewDecoder(r.Body).Decode(&b))
-				//assert.EqualValues(t, fosite.Arguments{"https://www.ory.sh/api"}, b.RequestedAudience)
-				//assert.EqualValues(t, fosite.Arguments{"https://www.ory.sh/api"}, b.GrantedAudience)
+				assert.EqualValues(t, fosite.Arguments{"https://www.ory.sh/api"}, b.RequestedAudience)
+				assert.EqualValues(t, fosite.Arguments{"https://www.ory.sh/api"}, b.GrantedAudience)
 				assert.EqualValues(t, "my-client", b.Session.(*defaultSession).Subject)
 			},
 		},
-		//{
-		//	description: "should pass",
-		//	setup: func() {
-		//	},
-		//	check: func(t *testing.T, r *http.Response) {
-		//		var b fosite.AccessRequest
-		//		b.Client = new(fosite.DefaultClient)
-		//		b.Session = new(defaultSession)
-		//		require.NoError(t, json.NewDecoder(r.Body).Decode(&b))
-		//		assert.EqualValues(t, fosite.Arguments{}, b.RequestedAudience)
-		//		assert.EqualValues(t, fosite.Arguments{}, b.GrantedAudience)
-		//		assert.EqualValues(t, "my-client", b.Session.(*defaultSession).Subject)
-		//	},
-		//},
+		{
+			description: "should pass",
+			setup: func() {
+			},
+			check: func(t *testing.T, r *http.Response) {
+				var b fosite.AccessRequest
+				b.Client = new(fosite.DefaultClient)
+				b.Session = new(defaultSession)
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&b))
+				assert.EqualValues(t, fosite.Arguments{}, b.RequestedAudience)
+				assert.EqualValues(t, fosite.Arguments{}, b.GrantedAudience)
+				assert.EqualValues(t, "my-client", b.Session.(*defaultSession).Subject)
+			},
+		},
 	} {
 		t.Run(fmt.Sprintf("case=%d", k), func(t *testing.T) {
 			c.setup()

@@ -49,6 +49,7 @@ var j = &DefaultJWTStrategy{
 var jwtValidCase = func(tokenType fosite.TokenType) *fosite.Request {
 	r := &fosite.Request{
 		Client: &fosite.DefaultClient{
+			ID:     "Nigger",
 			Secret: []byte("foobarfoobarfoobarfoobar"),
 		},
 		Session: &JWTSession{

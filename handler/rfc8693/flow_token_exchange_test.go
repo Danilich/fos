@@ -193,10 +193,11 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 
 				subjectTokenClient := &fosite.DefaultClient{
 					//MayAct: []string{"exchange-client"},
+					Metadata: []byte("subject_boss"),
 				}
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
 				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
-				//areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
+				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
 
 				areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
 				areq.EXPECT().GetRequestedAudience().Return([]string{})
@@ -204,6 +205,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 					ID:         "exchange-client",
 					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
 					Scopes:     []string{"foo", "bar", "baz"},
+					Metadata:   []byte("boss"),
 				})
 			},
 		},
@@ -213,7 +215,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			err := h.HandleTokenEndpointRequest(nil, areq)
 			if c.expectErr != nil {
 				require.EqualError(t, err, c.expectErr.Error())
-				//require.Equal(t, c.expectErr.(*fosite.RFC6749Error).HintField, errors.Unwrap(err).(*fosite.RFC6749Error).HintField)
+				require.Equal(t, c.expectErr.(*fosite.RFC6749Error).HintField, errors.Unwrap(err).(*fosite.RFC6749Error).HintField)
 			} else {
 				require.NoError(t, err)
 			}

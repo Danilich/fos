@@ -21,7 +21,10 @@
 
 package fosite
 
-import jose "gopkg.in/square/go-jose.v2"
+import (
+	"github.com/ory/x/sqlxx"
+	jose "gopkg.in/square/go-jose.v2"
+)
 
 // Client represents a client or an app.
 type Client interface {
@@ -50,6 +53,8 @@ type Client interface {
 
 	// GetAudience returns the allowed audience(s) for this client.
 	GetAudience() Arguments
+
+	GetMetaData() sqlxx.JSONRawMessage
 }
 
 // ClientWithSecretRotation extends Client interface by a method providing a slice of rotated secrets.
@@ -95,15 +100,16 @@ type ResponseModeClient interface {
 
 // DefaultClient is a simple default implementation of the Client interface.
 type DefaultClient struct {
-	ID             string   `json:"id"`
-	Secret         []byte   `json:"client_secret,omitempty"`
-	RotatedSecrets [][]byte `json:"rotated_secrets,omitempty"`
-	RedirectURIs   []string `json:"redirect_uris"`
-	GrantTypes     []string `json:"grant_types"`
-	ResponseTypes  []string `json:"response_types"`
-	Scopes         []string `json:"scopes"`
-	Audience       []string `json:"audience"`
-	Public         bool     `json:"public"`
+	ID             string               `json:"id"`
+	Secret         []byte               `json:"client_secret,omitempty"`
+	RotatedSecrets [][]byte             `json:"rotated_secrets,omitempty"`
+	RedirectURIs   []string             `json:"redirect_uris"`
+	GrantTypes     []string             `json:"grant_types"`
+	ResponseTypes  []string             `json:"response_types"`
+	Scopes         []string             `json:"scopes"`
+	Audience       []string             `json:"audience"`
+	Public         bool                 `json:"public"`
+	Metadata       sqlxx.JSONRawMessage `json:"metadata,omitempty"`
 }
 
 type DefaultOpenIDConnectClient struct {
@@ -127,6 +133,10 @@ type TokenExchangeClient interface {
 type DefaultResponseModeClient struct {
 	*DefaultClient
 	ResponseModes []ResponseModeType `json:"response_modes"`
+}
+
+func (c *DefaultClient) GetMetaData() sqlxx.JSONRawMessage {
+	return c.Metadata
 }
 
 func (c *DefaultClient) GetID() string {

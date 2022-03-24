@@ -61,6 +61,7 @@ import (
 func (f *Fosite) NewAccessRequest(ctx context.Context, r *http.Request, session Session) (AccessRequester, error) {
 
 	accessRequest := NewAccessRequest(session)
+	//TODO
 	accessRequest.Request.Lang = i18n.GetLangFromRequest(f.MessageCatalog, r)
 
 	ctx = context.WithValue(ctx, RequestContextKey, r)

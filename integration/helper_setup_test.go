@@ -70,10 +70,10 @@ var fositeStore = &storage.MemoryStore{
 			Secret:        []byte(`$2a$10$IxMdI6d.LIRZPpSfEwNoeu4rY3FhDREsxFJXikcgdRRAStxUlsuEO`), // = "foobar"
 			RedirectURIs:  []string{"http://localhost:3846/callback"},
 			ResponseTypes: []string{"id_token", "code", "token", "token code", "id_token code", "token id_token", "token code id_token"},
-			//GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials", "urn:ietf:params:oauth:grant-type:token-exchange"},
-			GrantTypes: []string{"urn:ietf:params:oauth:grant-type:token-exchange", "client_credentials"},
-			Scopes:     []string{"fosite", "offline", "openid"},
-			Audience:   []string{tokenURL},
+			GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials", "urn:ietf:params:oauth:grant-type:token-exchange"},
+			Scopes:        []string{"fosite", "offline", "openid"},
+			Audience:      []string{tokenURL},
+			Metadata:      []byte("boss"),
 		},
 
 		"public-client": &fosite.DefaultClient{
@@ -86,16 +86,6 @@ var fositeStore = &storage.MemoryStore{
 			Scopes:        []string{"fosite", "offline", "openid"},
 			Audience:      []string{tokenURL},
 		},
-
-		//"exchange-client": &fosite.DefaultClient{
-		//	ID:            "my-client",
-		//	Secret:        []byte(`$2a$10$IxMdI6d.LIRZPpSfEwNoeu4rY3FhDREsxFJXikcgdRRAStxUlsuEO`), // = "foobar"
-		//	RedirectURIs:  []string{"http://localhost:3846/callback"},
-		//	ResponseTypes: []string{"id_token", "code", "token", "token code", "id_token code", "token id_token", "token code id_token"},
-		//	GrantTypes:    []string{"urn:ietf:params:oauth:grant-type:token-exchange", "client_credentials"},
-		//	Scopes:        []string{"fosite", "offline", "openid"},
-		//	Audience:      []string{tokenURL},
-		//},
 	},
 	Users: map[string]storage.MemoryUserRelation{
 		"peter": {

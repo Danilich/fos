@@ -40,6 +40,9 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	}
 
 	client := request.GetClient()
+
+	log.Println(string(client.GetMetaData()))
+	//log.Println(string(request.GetSubjectTokenClient().GetMetaData()))
 	if client.IsPublic() {
 		return errors.WithStack(fosite.ErrInvalidGrant.WithHint("The OAuth 2.0 Client is marked as public and is thus not allowed to use authorization grant \"urn:ietf:params:oauth:grant-type:token-exchange\"."))
 	}

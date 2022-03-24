@@ -9,6 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	fosite "github.com/ory/fosite"
+	sqlxx "github.com/ory/x/sqlxx"
 )
 
 // MockClient is a mock of Client interface.
@@ -88,6 +89,20 @@ func (m *MockClient) GetID() string {
 func (mr *MockClientMockRecorder) GetID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetID", reflect.TypeOf((*MockClient)(nil).GetID))
+}
+
+// GetMetaData mocks base method.
+func (m *MockClient) GetMetaData() sqlxx.JSONRawMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMetaData")
+	ret0, _ := ret[0].(sqlxx.JSONRawMessage)
+	return ret0
+}
+
+// GetMetaData indicates an expected call of GetMetaData.
+func (mr *MockClientMockRecorder) GetMetaData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMetaData", reflect.TypeOf((*MockClient)(nil).GetMetaData))
 }
 
 // GetRedirectURIs mocks base method.

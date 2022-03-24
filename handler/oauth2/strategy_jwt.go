@@ -24,7 +24,6 @@ package oauth2
 import (
 	"context"
 	"fmt"
-	"github.com/pborman/uuid"
 	"strings"
 	"time"
 
@@ -156,8 +155,8 @@ func (h *DefaultJWTStrategy) generate(ctx context.Context, tokenType fosite.Toke
 			WithScopeField(
 				h.ScopeField,
 			)
-		id := uuid.New()
-		claims.Add(id, jwtSession.GetJWTClaims().GetSubject())
+
+		claims.Add("client_id", requester.GetClient().GetID())
 		fmt.Println("Hello from generate jwt")
 		fmt.Println(claims)
 		return h.JWTStrategy.Generate(ctx, claims.ToMapClaims(), jwtSession.GetJWTHeader())
