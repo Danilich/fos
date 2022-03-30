@@ -55,6 +55,8 @@ type Client interface {
 	GetAudience() Arguments
 
 	GetMetaData() sqlxx.JSONRawMessage
+
+	SetMetaData(val sqlxx.JSONRawMessage)
 }
 
 // ClientWithSecretRotation extends Client interface by a method providing a slice of rotated secrets.
@@ -137,6 +139,10 @@ type DefaultResponseModeClient struct {
 
 func (c *DefaultClient) GetMetaData() sqlxx.JSONRawMessage {
 	return c.Metadata
+}
+
+func (c *DefaultClient) SetMetaData(val sqlxx.JSONRawMessage) {
+	c.Metadata = val
 }
 
 func (c *DefaultClient) GetID() string {

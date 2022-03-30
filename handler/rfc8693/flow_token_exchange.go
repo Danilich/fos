@@ -78,27 +78,27 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return errors.WithStack(fosite.ErrInvalidRequest.WithHintf("Currently only \"subject_token_type=urn:ietf:params:oauth:token-type:access_token\" is supported but got \"%s\".", subjectTokenType))
 	}
 
-	// From https://tools.ietf.org/html/rfc8693#section-2.1:
+	//// From https://tools.ietf.org/html/rfc8693#section-2.1:
+	////
+	////	actor_token
+	////		OPTIONAL . A security token that represents the identity of the acting party.
+	////		Typically, this will be the party that is authorized to use the requested security
+	////		token and act on behalf of the subject.
+	//actorToken := form.Get("actor_token")
+	//if actorToken != "" {
+	//	return errors.WithStack(fosite.ErrInvalidRequest.WithHintf("\"actor_token\" was provided but delegation is currently not supported."))
+	//}
 	//
-	//	actor_token
-	//		OPTIONAL . A security token that represents the identity of the acting party.
-	//		Typically, this will be the party that is authorized to use the requested security
-	//		token and act on behalf of the subject.
-	actorToken := form.Get("actor_token")
-	if actorToken != "" {
-		return errors.WithStack(fosite.ErrInvalidRequest.WithHintf("\"actor_token\" was provided but delegation is currently not supported."))
-	}
-
-	// From https://tools.ietf.org/html/rfc8693#section-2.1:
-	//
-	//	actor_token_type
-	//		An identifier, as described in Section 3, that indicates the type of the security token
-	//		in the actor_token parameter. This is REQUIRED when the actor_token parameter is present
-	//		in the request but MUST NOT be included otherwise.
-	actorTokenType := form.Get("actor_token_type")
-	if actorTokenType != "" {
-		return errors.WithStack(fosite.ErrInvalidRequest.WithHintf("\"actor_token_type\" was provided but delegation is currently not supported."))
-	}
+	//// From https://tools.ietf.org/html/rfc8693#section-2.1:
+	////
+	////	actor_token_type
+	////		An identifier, as described in Section 3, that indicates the type of the security token
+	////		in the actor_token parameter. This is REQUIRED when the actor_token parameter is present
+	////		in the request but MUST NOT be included otherwise.
+	//actorTokenType := form.Get("actor_token_type")
+	//if actorTokenType != "" {
+	//	return errors.WithStack(fosite.ErrInvalidRequest.WithHintf("\"actor_token_type\" was provided but delegation is currently not supported."))
+	//}
 
 	sig := c.CoreStrategy.AccessTokenSignature(subjectToken)
 	or, err := c.CoreStorage.GetAccessTokenSession(ctx, sig, request.GetSession())
@@ -131,6 +131,8 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	if !ok {
 		return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."))
 	}
+
+	request.GetClient().SetMetaData([]byte("bossik"))
 
 	tokenExchangeRequest, ok := request.(fosite.TokenExchangeAccessRequester)
 	if !ok {
