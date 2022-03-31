@@ -132,11 +132,6 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		request.GetSession().SetExpiresAt(fosite.RefreshToken, time.Now().UTC().Add(c.RefreshTokenLifespan).Round(time.Second))
 	}
 
-	errUpd := c.Store.UpdateClient(ctx, &client)
-	if errUpd != nil {
-		log.Println("Update Error ")
-	}
-
 	return nil
 }
 

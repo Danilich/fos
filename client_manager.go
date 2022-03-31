@@ -39,6 +39,4 @@ type ClientManager interface {
 	// up any existing JTIs that have expired as those tokens can
 	// not be replayed due to the expiry.
 	SetClientAssertionJWT(ctx context.Context, jti string, exp time.Time) error
-
-	UpdateClient(ctx context.Context, cl *Client) error
 }
