@@ -48,6 +48,10 @@ type Session interface {
 
 	// Clone clones the session.
 	Clone() Session
+
+	GetExtra() map[string]interface{}
+
+	SetExtra(key string, value interface{})
 }
 
 // DefaultSession is a default implementation of the session interface.
@@ -56,6 +60,17 @@ type DefaultSession struct {
 	Username  string
 	Subject   string
 	Extra     map[string]interface{}
+}
+
+func (c *DefaultSession) GetExtra() map[string]interface{} {
+	return c.Extra
+}
+
+func (c *DefaultSession) SetExtra(key string, value interface{}) {
+	if c.Extra == nil {
+		c.Extra = make(map[string]interface{})
+	}
+	c.Extra[key] = value
 }
 
 func (s *DefaultSession) SetExpiresAt(key TokenType, exp time.Time) {

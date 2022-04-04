@@ -2,7 +2,6 @@ package rfc8693
 
 import (
 	"context"
-	"fmt"
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
@@ -25,11 +24,8 @@ type Handler struct {
 	Store fosite.Storage
 }
 
-// HandleTokenEndpointRequest implements https://tools.ietf.org/html/rfc8693#section-2.1 (currently impersonation only)
 func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite.AccessRequester) error {
 
-	// From https://tools.ietf.org/html/rfc8693#section-2.1:
-	//
 	//	grant_type
 	//		REQUIRED. The value "urn:ietf:params:oauth:grant-type:token-
 	//		exchange" indicates that a token exchange is being performed.
@@ -39,7 +35,6 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 
 	client := request.GetClient()
 
-	//log.Println(string(request.GetSubjectTokenClient().GetMetaData()))
 	if client.IsPublic() {
 		return errors.WithStack(fosite.ErrInvalidGrant.WithHint("The OAuth 2.0 Client is marked as public and is thus not allowed to use authorization grant \"urn:ietf:params:oauth:grant-type:token-exchange\"."))
 	}
@@ -83,9 +78,10 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return err
 	}
 
-	log.Println("Subject Token Client")
-	log.Println(or.GetClient().GetID())
 	//TODO
+	log.Println("Previous token")
+	log.Println(or.GetClient().GetID())
+
 	var subjectTokenClientId string
 	if or.GetSubjectTokenClient() == nil {
 		// first exchange request has no subjects token client set
@@ -123,10 +119,12 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		}
 	}
 
-	if err := c.AudienceMatchingStrategy(client.GetAudience(), request.GetRequestedAudience()); err != nil {
-		return errors.WithStack(fosite.ErrInvalidTarget)
+	//if err := c.AudienceMatchingStrategy(client.GetAudience(), request.GetRequestedAudience()); err != nil {
+	//	return errors.WithStack(fosite.ErrInvalidTarget)
+	//
+	//}
 
-	}
+	request.GetSession().SetExtra("prevClient", or.GetClient().GetID())
 
 	request.GetSession().SetExpiresAt(fosite.AccessToken, time.Now().UTC().Add(c.AccessTokenLifespan))
 	if c.RefreshTokenLifespan > -1 {
@@ -138,7 +136,7 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 
 // PopulateTokenEndpointResponse implements https://tools.ietf.org/html/rfc8693#section-2.2 (currently impersonation only)
 func (c *Handler) PopulateTokenEndpointResponse(ctx context.Context, request fosite.AccessRequester, response fosite.AccessResponder) error {
-	fmt.Println("Hello from Populates")
+
 	if !request.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange") {
 		return errors.WithStack(fosite.ErrUnknownRequest)
 	}
@@ -183,7 +181,6 @@ func (c *Handler) CanSkipClientAuth(requester fosite.AccessRequester) bool {
 }
 
 func (c *Handler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester) bool {
-	log.Println(requester.GetGrantTypes())
 
 	// grant_type REQUIRED.
 	// Value MUST be set to "client_credentials".
