@@ -56,6 +56,7 @@ type DefaultSession struct {
 	ExpiresAt map[fosite.TokenType]time.Time
 	Username  string
 	Subject   string
+	Extra     map[string]interface{}
 }
 
 func NewDefaultSession() *DefaultSession {
@@ -65,6 +66,17 @@ func NewDefaultSession() *DefaultSession {
 		},
 		Headers: &jwt.Headers{},
 	}
+}
+
+func (c *DefaultSession) GetExtra() map[string]interface{} {
+	return c.Extra
+}
+
+func (c *DefaultSession) SetExtra(key string, value interface{}) {
+	if c.Extra == nil {
+		c.Extra = make(map[string]interface{})
+	}
+	c.Extra[key] = value
 }
 
 func (s *DefaultSession) Clone() fosite.Session {

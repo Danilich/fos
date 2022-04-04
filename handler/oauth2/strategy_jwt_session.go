@@ -47,6 +47,18 @@ type JWTSession struct {
 	ExpiresAt map[fosite.TokenType]time.Time
 	Username  string
 	Subject   string
+	Extra     map[string]interface{}
+}
+
+func (c *JWTSession) GetExtra() map[string]interface{} {
+	return c.Extra
+}
+
+func (c *JWTSession) SetExtra(key string, value interface{}) {
+	if c.Extra == nil {
+		c.Extra = make(map[string]interface{})
+	}
+	c.Extra[key] = value
 }
 
 func (j *JWTSession) GetJWTClaims() jwt.JWTClaimsContainer {
