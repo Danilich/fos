@@ -83,6 +83,8 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return err
 	}
 
+	log.Println("Subject Token Client")
+	log.Println(or.GetClient().GetID())
 	//TODO
 	var subjectTokenClientId string
 	if or.GetSubjectTokenClient() == nil {
@@ -97,7 +99,6 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return errors.WithStack(fosite.ErrRequestForbidden.WithHint("Clients are not allowed to perform a token exchange on their own tokens"))
 	}
 
-	// reload client from storage to ensure that may_act is up to date in case of eventual revocation
 	subjectTokenClient, err := c.Store.GetClient(ctx, subjectTokenClientId)
 	if err != nil {
 		return errors.WithStack(fosite.ErrInvalidClient.WithHint("The subjects token OAuth2 Client does not exist."))
