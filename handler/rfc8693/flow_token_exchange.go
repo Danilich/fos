@@ -6,7 +6,6 @@ import (
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
 	"github.com/pkg/errors"
-	"log"
 	"time"
 )
 
@@ -29,7 +28,7 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	//	grant_type
 	//		REQUIRED. The value "urn:ietf:params:oauth:grant-type:token-
 	//		exchange" indicates that a token exchange is being performed.
-	if !request.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange") {
+	if !request.GetGrantTypes().ExactOne("token-exchange") {
 		return errors.WithStack(fosite.ErrUnknownRequest)
 	}
 
@@ -40,7 +39,7 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	}
 
 	// Check whether client is allowed to use token exchange
-	if !client.GetGrantTypes().Has("urn:ietf:params:oauth:grant-type:token-exchange") {
+	if !client.GetGrantTypes().Has("token-exchange") {
 		return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to use authorization grant \"urn:ietf:params:oauth:grant-type:token-exchange\"."))
 	}
 
@@ -78,19 +77,13 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		return err
 	}
 
-	//TODO
-	log.Println("Previous token")
-	log.Println(or.GetClient().GetID())
-
 	var subjectTokenClientId string
 	if or.GetSubjectTokenClient() == nil {
-		// first exchange request has no subjects token client set
 		subjectTokenClientId = or.GetClient().GetID()
 	} else {
 		subjectTokenClientId = or.GetSubjectTokenClient().GetID()
 	}
 
-	// forbid original subjects client to exchange its own token
 	if client.GetID() == subjectTokenClientId {
 		return errors.WithStack(fosite.ErrRequestForbidden.WithHint("Clients are not allowed to perform a token exchange on their own tokens"))
 	}
@@ -137,11 +130,11 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 // PopulateTokenEndpointResponse implements https://tools.ietf.org/html/rfc8693#section-2.2 (currently impersonation only)
 func (c *Handler) PopulateTokenEndpointResponse(ctx context.Context, request fosite.AccessRequester, response fosite.AccessResponder) error {
 
-	if !request.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange") {
+	if !request.GetGrantTypes().ExactOne("token-exchange") {
 		return errors.WithStack(fosite.ErrUnknownRequest)
 	}
 
-	if !request.GetClient().GetGrantTypes().Has("urn:ietf:params:oauth:grant-type:token-exchange") {
+	if !request.GetClient().GetGrantTypes().Has("token-exchange") {
 		return errors.WithStack(fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to use authorization grant \"urn:ietf:params:oauth:grant-type:token-exchange\"."))
 	}
 
@@ -184,5 +177,5 @@ func (c *Handler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester
 
 	// grant_type REQUIRED.
 	// Value MUST be set to "client_credentials".
-	return requester.GetGrantTypes().ExactOne("urn:ietf:params:oauth:grant-type:token-exchange")
+	return requester.GetGrantTypes().ExactOne("token-exchange")
 }

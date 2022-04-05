@@ -66,7 +66,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			mock: func() {
 				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
 				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
+					GrantTypes: fosite.Arguments{"token-exchange"},
 					Audience:   []string{"https://www.ory.sh/api"},
 				})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234")
@@ -98,7 +98,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because allowed actor not set",
 			expectErr:   fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
 				areq.EXPECT().GetRequestForm().Return(query)
 				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
@@ -120,7 +120,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because audience not valid",
 			expectErr:   fosite.ErrInvalidTarget.WithHint("Requested audience \"https://www.ory.sh/not-api\" has not been whitelisted by the OAuth 2.0 Client."),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
 				areq.EXPECT().GetRequestForm().Return(query)
 				exchangeClient := &fosite.DefaultClient{
@@ -150,7 +150,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because scope not valid",
 			expectErr:   fosite.ErrInvalidScope.WithHint("The OAuth 2.0 Client is not allowed to request scope \"bar\"."),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
 				areq.EXPECT().GetRequestForm().Return(query)
 
@@ -183,7 +183,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			mock: func() {
 				session := new(fosite.DefaultSession)
 				areq.EXPECT().GetSession().AnyTimes().Return(session)
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
 				areq.EXPECT().GetRequestForm().Return(query)
 
@@ -257,16 +257,16 @@ func TestTokenExchange_PopulateTokenEndpointResponse(t *testing.T) {
 			description: "should fail because client not allowed",
 			expectErr:   fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to use authorization grant \"urn:ietf:params:oauth:grant-type:token-exchange\"."),
 			mock: func() {
-				areq.GrantTypes = fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"}
+				areq.GrantTypes = fosite.Arguments{"token-exchange"}
 				areq.Client = &fosite.DefaultClient{GrantTypes: fosite.Arguments{"foo"}}
 			},
 		},
 		{
 			description: "should pass but without including a refresh token",
 			mock: func() {
-				areq.GrantTypes = fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"}
+				areq.GrantTypes = fosite.Arguments{"token-exchange"}
 				areq.Session = &fosite.DefaultSession{}
-				areq.Client = &fosite.DefaultClient{GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"}}
+				areq.Client = &fosite.DefaultClient{GrantTypes: fosite.Arguments{"token-exchange"}}
 				chgen.EXPECT().GenerateAccessToken(nil, areq).Times(1).Return("tokenfoo.bar", "bar", nil)
 				refresh.EXPECT().GenerateRefreshToken(nil, areq).Times(0)
 				store.EXPECT().CreateAccessTokenSession(nil, "bar", gomock.Eq(areq.Sanitize([]string{}))).Times(1).Return(nil)
@@ -275,9 +275,9 @@ func TestTokenExchange_PopulateTokenEndpointResponse(t *testing.T) {
 		{
 			description: "should pass and include a refresh token",
 			mock: func() {
-				areq.GrantTypes = fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"}
+				areq.GrantTypes = fosite.Arguments{"token-exchange"}
 				areq.Session = &fosite.DefaultSession{}
-				areq.Client = &fosite.DefaultClient{GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"}}
+				areq.Client = &fosite.DefaultClient{GrantTypes: fosite.Arguments{"token-exchange"}}
 				areq.GrantScope("offline")
 				chgen.EXPECT().GenerateAccessToken(nil, areq).Times(1).Return("tokenfoo.bar", "bar", nil)
 				refresh.EXPECT().GenerateRefreshToken(nil, areq).Times(1).Return("refreshfoo.bar", "", nil)
