@@ -7,7 +7,6 @@ import (
 	"github.com/ory/fosite/storage"
 	"github.com/pkg/errors"
 	"github.com/tidwall/sjson"
-	"log"
 	"strings"
 	"time"
 )
@@ -123,16 +122,12 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	metToString := ""
 
 	if or.GetSession().GetExtra()["act"] != nil {
-		metToString = string(or.GetSession().GetExtra()["act"].([]byte))
-		log.Println(metToString)
-
+		metToString = or.GetSession().GetExtra()["act"].(string)
 	}
 
 	if !strings.Contains(metToString, client.GetID()) {
 		act := addNewActor(metToString, client.GetID())
-		inBytes := []byte(act)
-		log.Println(string(inBytes))
-		request.GetSession().SetExtra("act", inBytes)
+		request.GetSession().SetExtra("act", act)
 	}
 
 	request.GetSession().SetExpiresAt(fosite.AccessToken, time.Now().UTC().Add(c.AccessTokenLifespan))
