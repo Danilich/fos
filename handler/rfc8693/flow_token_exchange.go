@@ -5,8 +5,9 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
-	uuid2 "github.com/pborman/uuid"
 	"github.com/pkg/errors"
+	"github.com/tidwall/sjson"
+	"strings"
 	"time"
 )
 
@@ -120,13 +121,14 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	request.GetSession().SetExtra("prevClient", or.GetClient().GetID())
 
 	//add act to Session
-
+	metToString := ""
 	if or.GetSession().GetExtra()["act"] != nil {
-		uuid := uuid2.NewUUID()
-		request.GetSession().SetExtra("act", or.GetSession().GetExtra()["act"].(string)+uuid.String())
-	} else {
+		metToString = or.GetSession().GetExtra()["act"].(string)
+	}
 
-		request.GetSession().SetExtra("act", "boss1")
+	if !strings.Contains(metToString, client.GetID()) {
+		act := addNewActor(metToString, client.GetID())
+		request.GetSession().SetExtra("act", act)
 	}
 
 	request.GetSession().SetExpiresAt(fosite.AccessToken, time.Now().UTC().Add(c.AccessTokenLifespan))
@@ -188,4 +190,39 @@ func (c *Handler) CanHandleTokenEndpointRequest(requester fosite.AccessRequester
 	// grant_type REQUIRED.
 	// Value MUST be set to "client_credentials".
 	return requester.GetGrantTypes().ExactOne("token-exchange")
+}
+
+func addNewActor(jsons string, client string) string {
+	type ClientID struct {
+		ID string `json:"client_id"`
+	}
+	const clientID = "client_id"
+
+	actPath := findLastActorPath(jsons)
+	var res string
+
+	if jsons == "" {
+		res, _ = sjson.Set(jsons, clientID, client)
+		return res
+	}
+
+	res, _ = sjson.Set(jsons, actPath, ClientID{ID: client})
+	return res
+}
+
+func findLastActorPath(jsons string) string {
+	const act = "act"
+	actPath := ""
+	actCount := strings.Count(jsons, act)
+
+	y := strings.Repeat("act.", actCount)
+	actPath = strings.TrimSuffix(y, ".")
+
+	if actCount == 0 {
+		actPath = act
+	} else {
+		actPath = actPath + ".act"
+	}
+
+	return actPath
 }
