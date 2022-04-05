@@ -160,3 +160,15 @@ func (mr *MockClientMockRecorder) IsPublic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsPublic", reflect.TypeOf((*MockClient)(nil).IsPublic))
 }
+
+// SetMetaData mocks base method.
+func (m *MockClient) SetMetaData(arg0 sqlxx.JSONRawMessage) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetMetaData", arg0)
+}
+
+// SetMetaData indicates an expected call of SetMetaData.
+func (mr *MockClientMockRecorder) SetMetaData(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMetaData", reflect.TypeOf((*MockClient)(nil).SetMetaData), arg0)
+}

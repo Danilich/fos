@@ -51,9 +51,9 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because subject_token not set",
 			expectErr:   fosite.ErrInvalidRequest.WithHint("Mandatory parameter subject_token is missing."),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
+					GrantTypes: fosite.Arguments{"token-exchange"},
 					Audience:   []string{"https://www.ory.sh/api"},
 				})
 				query, _ := url.ParseQuery("")
@@ -64,7 +64,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because subject_token_type not set",
 			expectErr:   fosite.ErrInvalidRequest.WithHint("Mandatory parameter subject_token_type is missing."),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
 					GrantTypes: fosite.Arguments{"token-exchange"},
 					Audience:   []string{"https://www.ory.sh/api"},
@@ -77,12 +77,12 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 			description: "should fail because client cannot exchange its own token",
 			expectErr:   fosite.ErrRequestForbidden.WithHint("Clients are not allowed to perform a token exchange on their own tokens"),
 			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"})
+				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
 				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
 				areq.EXPECT().GetRequestForm().Return(query)
 				exchangeClient := &fosite.DefaultClient{
 					ID:         "exchange-client",
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
+					GrantTypes: fosite.Arguments{"token-exchange"},
 					Audience:   []string{"https://www.ory.sh/api"},
 				}
 				areq.EXPECT().GetClient().Return(exchangeClient)
@@ -94,90 +94,41 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(exchangeClient)
 			},
 		},
-		{
-			description: "should fail because allowed actor not set",
-			expectErr:   fosite.ErrUnauthorizedClient.WithHint("The OAuth 2.0 Client is not allowed to perform a token exchange for the given subject token."),
-			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
-				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
-				areq.EXPECT().GetRequestForm().Return(query)
-				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
-					ID:         "exchange-client",
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
-					Audience:   []string{"https://www.ory.sh/api"},
-				})
-				areq.EXPECT().GetSession()
-				coreChgen.EXPECT().AccessTokenSignature("ABCD.1234").Return("1234")
-				coreStore.EXPECT().GetAccessTokenSession(nil, "1234", nil).Return(delegatedAreq, nil)
-				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
 
-				subjectTokenClient := &fosite.DefaultClient{}
-				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
-				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
-			},
-		},
-		{
-			description: "should fail because audience not valid",
-			expectErr:   fosite.ErrInvalidTarget.WithHint("Requested audience \"https://www.ory.sh/not-api\" has not been whitelisted by the OAuth 2.0 Client."),
-			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
-				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
-				areq.EXPECT().GetRequestForm().Return(query)
-				exchangeClient := &fosite.DefaultClient{
-					ID:         "exchange-client",
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
-					Audience:   []string{"https://www.ory.sh/api"},
-				}
-				areq.EXPECT().GetClient().Return(exchangeClient)
-				areq.EXPECT().GetSession()
-				coreChgen.EXPECT().AccessTokenSignature("ABCD.1234").Return("1234")
-				coreStore.EXPECT().GetAccessTokenSession(nil, "1234", nil).Return(delegatedAreq, nil)
-				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
-
-				subjectTokenClient := &fosite.DefaultClient{
-					//MayAct: []string{"exchange-client"},
-				}
-				delegatedAreq.EXPECT().GetSubjectTokenClient().Return(nil)
-				delegatedAreq.EXPECT().GetClient().Return(subjectTokenClient)
-				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
-				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
-
-				areq.EXPECT().GetRequestedScopes().Return([]string{})
-				areq.EXPECT().GetRequestedAudience().Return([]string{"https://www.ory.sh/not-api"})
-			},
-		},
-		{
-			description: "should fail because scope not valid",
-			expectErr:   fosite.ErrInvalidScope.WithHint("The OAuth 2.0 Client is not allowed to request scope \"bar\"."),
-			mock: func() {
-				areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
-				query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
-				areq.EXPECT().GetRequestForm().Return(query)
-
-				areq.EXPECT().GetSession()
-				coreChgen.EXPECT().AccessTokenSignature("ABCD.1234").Return("1234")
-				coreStore.EXPECT().GetAccessTokenSession(nil, "1234", nil).Return(delegatedAreq, nil)
-				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
-
-				subjectTokenClient := &fosite.DefaultClient{
-					//MayAct: []string{"exchange-client"},
-				}
-				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
-				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
-				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
-
-				delegatedAreq.EXPECT().GetGrantedScopes()
-
-				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
-					ID:         "exchange-client",
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
-					Audience:   []string{"https://www.ory.sh/api"},
-					Scopes:     []string{"foo"},
-				})
-
-				areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
-			},
-		},
+		//{
+		//	description: "should fail because scope not valid",
+		//	expectErr:   fosite.ErrInvalidScope.WithHint("The OAuth 2.0 Client is not allowed to request scope \"bar\"."),
+		//	mock: func() {
+		//		areq.EXPECT().GetGrantTypes().Return(fosite.Arguments{"token-exchange"})
+		//		query, _ := url.ParseQuery("subject_token=ABCD.1234&subject_token_type=urn:ietf:params:oauth:token-type:access_token")
+		//		areq.EXPECT().GetRequestForm().Return(query)
+		//
+		//		areq.EXPECT().GetSession()
+		//		coreChgen.EXPECT().AccessTokenSignature("ABCD.1234").Return("1234")
+		//		coreStore.EXPECT().GetAccessTokenSession(nil, "1234", nil).Return(delegatedAreq, nil)
+		//		coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
+		//
+		//		subjectTokenClient := &fosite.DefaultClient{
+		//
+		//			//MayAct: []string{"exchange-client"},
+		//
+		//		}
+		//		delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
+		//		storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
+		//		areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
+		//
+		//		delegatedAreq.EXPECT().GetGrantedScopes()
+		//
+		//		areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
+		//			ID:         "exchange-client",
+		//			GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
+		//			Audience:   []string{"https://www.ory.sh/api"},
+		//			Scopes:     []string{"foo"},
+		//		})
+		//
+		//		areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
+		//	},
+		//},
 		{
 			description: "should pass",
 			mock: func() {
@@ -192,18 +143,21 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				coreChgen.EXPECT().ValidateAccessToken(nil, delegatedAreq, "ABCD.1234").Return(nil)
 
 				subjectTokenClient := &fosite.DefaultClient{
-					//MayAct: []string{"exchange-client"},
-					Metadata: []byte("subject_boss"),
+					//ID: "my-client",
 				}
 				delegatedAreq.EXPECT().GetSubjectTokenClient().Times(2).Return(subjectTokenClient)
 				storage.EXPECT().GetClient(nil, "").Return(subjectTokenClient, nil)
 				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
 
+				session.Extra = make(map[string]interface{})
+				session.Extra["act"] = nil
+				delegatedAreq.EXPECT().GetSession().AnyTimes().Return(session)
+
 				areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
 				areq.EXPECT().GetRequestedAudience().Return([]string{})
 				areq.EXPECT().GetClient().Return(&fosite.DefaultClient{
 					ID:         "exchange-client",
-					GrantTypes: fosite.Arguments{"urn:ietf:params:oauth:grant-type:token-exchange"},
+					GrantTypes: fosite.Arguments{"token-exchange"},
 					Scopes:     []string{"foo", "bar", "baz"},
 					Metadata:   []byte("boss"),
 				})

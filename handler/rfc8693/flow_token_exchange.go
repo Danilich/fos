@@ -114,18 +114,19 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 		}
 	}
 
-	//if err := c.AudienceMatchingStrategy(client.GetAudience(), request.GetRequestedAudience()); err != nil {
-	//	return errors.WithStack(fosite.ErrInvalidTarget)
-	//
-	//}
+	if err := c.AudienceMatchingStrategy(client.GetAudience(), request.GetRequestedAudience()); err != nil {
+		return errors.WithStack(fosite.ErrInvalidTarget)
+
+	}
 
 	//add act to Session
 	metToString := ""
+
 	if or.GetSession().GetExtra()["act"] != nil {
 		metToString = string(or.GetSession().GetExtra()["act"].([]byte))
+		log.Println(metToString)
 
 	}
-	log.Println(metToString)
 
 	if !strings.Contains(metToString, client.GetID()) {
 		act := addNewActor(metToString, client.GetID())
