@@ -118,17 +118,16 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	//
 	//}
 
-	request.GetSession().SetExtra("prevClient", or.GetClient().GetID())
-
 	//add act to Session
 	metToString := ""
 	if or.GetSession().GetExtra()["act"] != nil {
-		metToString = or.GetSession().GetExtra()["act"].(string)
+		metToString = string(or.GetSession().GetExtra()["act"].(byte))
 	}
 
 	if !strings.Contains(metToString, client.GetID()) {
 		act := addNewActor(metToString, client.GetID())
-		request.GetSession().SetExtra("act", act)
+		inBytes := []byte(act)
+		request.GetSession().SetExtra("act", inBytes)
 	}
 
 	request.GetSession().SetExpiresAt(fosite.AccessToken, time.Now().UTC().Add(c.AccessTokenLifespan))
