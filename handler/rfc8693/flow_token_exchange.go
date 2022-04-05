@@ -5,6 +5,7 @@ import (
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/storage"
+	uuid2 "github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -119,7 +120,14 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 	request.GetSession().SetExtra("prevClient", or.GetClient().GetID())
 
 	//add act to Session
-	request.GetSession().SetExtra("act", or.GetSession().GetExtra()["act"].(string))
+
+	if or.GetSession().GetExtra()["act"] != nil {
+		uuid := uuid2.NewUUID()
+		request.GetSession().SetExtra("act", or.GetSession().GetExtra()["act"].(string)+uuid.String())
+	} else {
+
+		request.GetSession().SetExtra("act", "boss1")
+	}
 
 	request.GetSession().SetExpiresAt(fosite.AccessToken, time.Now().UTC().Add(c.AccessTokenLifespan))
 	if c.RefreshTokenLifespan > -1 {
