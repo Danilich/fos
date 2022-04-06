@@ -52,6 +52,10 @@ type Session interface {
 	GetExtra() map[string]interface{}
 
 	SetExtra(key string, value interface{})
+
+	//GetAct() json.RawMessage
+	//
+	//SetAct(act json.RawMessage)
 }
 
 // DefaultSession is a default implementation of the session interface.

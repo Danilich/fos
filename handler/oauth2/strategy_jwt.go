@@ -23,7 +23,6 @@ package oauth2
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -156,9 +155,6 @@ func (h *DefaultJWTStrategy) generate(ctx context.Context, tokenType fosite.Toke
 				h.ScopeField,
 			)
 
-		claims.Add("client_id", requester.GetClient().GetID())
-		fmt.Println("Hello from generate jwt")
-		fmt.Println(claims)
 		return h.JWTStrategy.Generate(ctx, claims.ToMapClaims(), jwtSession.GetJWTHeader())
 	}
 }

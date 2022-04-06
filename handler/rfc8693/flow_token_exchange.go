@@ -127,6 +127,7 @@ func (c *Handler) HandleTokenEndpointRequest(ctx context.Context, request fosite
 
 	if !strings.Contains(metToString, client.GetID()) {
 		act := addNewActor(metToString, client.GetID())
+
 		request.GetSession().SetExtra("act", act)
 	}
 

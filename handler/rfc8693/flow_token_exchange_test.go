@@ -150,7 +150,7 @@ func TestTokenExchange_HandleTokenEndpointRequest(t *testing.T) {
 				areq.EXPECT().SetSubjectTokenClient(subjectTokenClient)
 
 				session.Extra = make(map[string]interface{})
-				session.Extra["act"] = "nil"
+				session.Extra["act"] = `{"clinetId":"service1"}`
 				delegatedAreq.EXPECT().GetSession().AnyTimes().Return(session)
 
 				areq.EXPECT().GetRequestedScopes().Return([]string{"foo", "bar", "baz.bar"})
