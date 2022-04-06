@@ -23,7 +23,6 @@ package openid
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 	"time"
 
@@ -58,7 +57,6 @@ type DefaultSession struct {
 	Username  string
 	Subject   string
 	Extra     map[string]interface{}
-	Act       json.RawMessage
 }
 
 func NewDefaultSession() *DefaultSession {
@@ -68,14 +66,6 @@ func NewDefaultSession() *DefaultSession {
 		},
 		Headers: &jwt.Headers{},
 	}
-}
-
-func (c *DefaultSession) GetAct() json.RawMessage {
-	return c.Act
-}
-
-func (c *DefaultSession) SetAct(act json.RawMessage) {
-	c.Act = act
 }
 
 func (c *DefaultSession) GetExtra() map[string]interface{} {

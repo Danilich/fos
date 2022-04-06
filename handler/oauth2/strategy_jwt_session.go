@@ -48,16 +48,7 @@ type JWTSession struct {
 	Username  string
 	Subject   string
 	Extra     map[string]interface{}
-	//Act       json.RawMessage
 }
-
-//func (c *JWTSession) GetAct() json.RawMessage {
-//	return c.Act
-//}
-//
-//func (c *JWTSession) SetAct(act json.RawMessage) {
-//	c.Act = act
-//}
 
 func (c *JWTSession) GetExtra() map[string]interface{} {
 	return c.Extra
